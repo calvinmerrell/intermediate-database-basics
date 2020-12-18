@@ -1,0 +1,236 @@
+Practice joins
+
+1. 
+select * from invoice i
+JOIN invoice_line il ON il.invoice_id = i.invoice_id
+WHERE il.unit_price > 0.99;
+
+2.  this joined the whole customer table to the invoice table based on the customer id
+    after that the select pulled out the info the question asked for.  
+select i.invoice_date, c.first_name, c.last_name, i.total 
+from invoice i
+join customer c on i.customer_id = c.customer_id;
+
+3. same thing as #2 joining the employee table to the customer table based on id's 
+   and pulling the question info with the select. 
+
+select c.first_name, c.last_name, e.first_name, e.last_name
+from customer c
+join employee e on c.support_rep_id = e.employee_id
+
+4. again same thing. joining the artist table to the album title based on artist_id. 
+    then using the selcet to pull the info for the question. 
+
+select al.title, ar.name
+from album al
+join artist ar on al.artist_id = ar.artist_id
+
+5. So this combines two table and selects the info for the question. 
+    But it also puts a criteria with the WHERE at the bottom. 
+
+SELECT pt.track_id
+FROM playlist_track pt
+JOIN playlist p ON p.playlist_id = pt.playlist_id
+WHERE p.name = 'Music';
+
+6. joined the two tables added criteria and to double check I used Select to include the playlist_id
+    just to make sure all the track names did indeed come from playlist_id 5
+
+select t.name, plt.playlist_id
+from track t
+Join playlist_track plt on plt.track_id = t.track_id
+where plt.playlist_id = 5
+
+7. need the names of all the playlists and the names of all the tracks on those playlists. 
+    So had to join the playlist_track table to the playlist table to get the playlist name
+    then had to join the track table to the playlist_track table to get the names of the tracks.  
+
+select t.name, p.name
+from track t
+join playlist_track pt ON t.track_id = pt.track_id
+join playlist p ON pt.playlist_id = p.playlist_id;
+
+8. same thing as 7 but with a constraint in the WHERE line.
+
+select t.name, a.title
+from track t
+join album a ON t.album_id = a.album_id
+join genre g ON g.genre_id = t.genre_id
+where g.name = 'Alternative & Punk'
+
+NESTED QUERIES QUESTIONS
+1. 
+SELECT * FROM invoice
+WHERE invoice_id IN ( 
+    SELECT invoice_id FROM invoice_line WHERE unit_price > 0.99 
+    )
+
+2.
+SELECT * FROM playlist_track
+WHERE playlist_id IN ( 
+    SELECT playlist_id FROM playlist WHERE name = 'Music' 
+    )
+
+3. 
+SELECT name FROM track
+WHERE track_id IN ( 
+    SELECT track_id FROM playlist_track WHERE playlist_id = 5 
+    )
+
+4.
+SELECT * FROM track
+WHERE genre_id IN ( 
+    SELECT genre_id FROM genre WHERE name = 'Comedy' 
+    )
+
+5.
+SELECT * FROM track
+WHERE album_id IN ( 
+    SELECT album_id FROM album WHERE title = 'Fireball' 
+    )
+
+6.
+SELECT * FROM track
+WHERE album_id IN ( 
+  SELECT album_id FROM album WHERE artist_id IN ( 
+    SELECT artist_id FROM artist WHERE name = 'Queen'
+  )
+)
+
+UPDATING ROWS
+
+1.
+    UPDATE customer
+    SET fax = null
+    WHERE fax IS NOT null
+
+2.
+    UPDATE customer
+    SET company = 'Self'
+    WHERE company IS null
+
+3. 
+    UPDATE customer
+    SET lastname = 'Thompson'
+    WHERE first_name = 'Julia AND last_name = 'Barnett'
+
+4. 
+    UPDATE customer
+    SET support_rep_id = 4
+    WHERE email = 'luisrojas@yahoo.cl'
+
+5. 
+    UPDATE track
+    SET composer = 'The darkness around us'
+    WHERE genre_id = ( SELECT genre_id FROM genre WHERE name = 'Metal' )
+    AND composer IS null
+
+GROUP BY QUESTIONS
+
+1.
+SELECT COUNT(*), g.name
+FROM track t
+JOIN genre g ON t.genre_id = g.genre_id
+GROUP BY g.name
+
+2.
+SELECT COUNT(*), g.name
+FROM track t
+JOIN genre g ON g.genre_id = t.genre_id
+WHERE g.name = 'Pop' OR g.name = 'Rock'
+GROUP BY g.name
+
+3.
+SELECT ar.name, COUNT(*)
+FROM album al
+JOIN artist ar ON ar.artist_id = al.artist_id
+GROUP BY ar.name
+
+
+USE DISTINCT QUESTIONS
+
+1. SELECT DISTINCT composer FROM track
+
+2. SELECT DISTINCT billing_postal_code FROM invoice
+
+3. SELECT DISTINCT company FROM customer
+
+
+DELETE PRATICE QUESTIONS
+
+1. delete bronze entries
+DELETE FROM practice_delete 
+WHERE type = 'bronze'
+
+2. delete silver
+DELETE FROM practice_delete 
+WHERE type = 'silver'
+
+3. delete entries with value of 150
+DELETE FROM practice_delete 
+WHERE value = 150
+
+ECOMMERCE SIMULATION QUESTIONS
+
+Table 1:
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(150),
+  email VARCHAR(150)
+  )
+
+Table 2: 
+CREATE TABLE products (
+  product_id int PRIMARY KEY,
+  price int,
+  name VARCHAR(150)
+  )
+
+Table 3:
+CREATE TABLE orders (
+  order_id int PRIMARY KEY,
+  product_id int,
+  quantity int
+  )
+
+Table 1 DATA:
+    INSERT INTO users 
+    VALUES (default,'John','john@gmail.com');
+
+    INSERT INTO users 
+    VALUES (default,'Peter','peter@gmail.com');
+
+    INSERT INTO users 
+    VALUES (default,'James','james@gmail.com')
+
+Table 2 DATA:
+    INSERT INTO products 
+    VALUES ('1','3','Orange');
+
+    INSERT INTO products 
+    VALUES ('2','2','Banana');
+
+    INSERT INTO products 
+    VALUES ('3','5','Pear')
+
+Table 3 DATA:
+    INSERT INTO orders 
+    VALUES ('1','3','1');
+    INSERT INTO orders 
+    VALUES ('3','2','3');
+    INSERT INTO orders 
+    VALUES ('2','1','5')
+
+QUERIES: 
+1. SELECT product_id FROM orders WHERE order_id = 1
+
+2. SELECT * FROM orders
+
+3.  SELECT SUM(o.quantity * price) FROM orders o 
+    JOIN products p ON p.product_id = o.product_id
+    Where order_id = 1
+
+Adding a Foreign Key reference
+    1. ALTER TABLE orders ADD user_id VARCHAR(150)
+        ALTER TABLE orders 
+        ADD FOREIGN KEY (user_id) REFERENCES users(user_id)
